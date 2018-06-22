@@ -1,0 +1,198 @@
+#----------------------------------------------------------------	
+#		ODOO 8 INSTALLATION STEP	-----------------
+#----------------------------------------------------------------
+
+#	Prerequisites
+#----------------------------------------------------------------
+
+#By default Python2.7 is intalled
+sudo apt-get update
+sudo apt-get dist-upgrade
+
+#Install git for collaboration
+sudo apt-get install git
+
+
+#	create a new Odoo system user to run its processes
+#-----------------------------------------------------------------
+#below we're create user "odoo" within group "odoo"
+sudo adduser --system --home=/opt/odoo --group odoo
+
+#You can view the user and group
+sudo cat /etc/passwd
+
+
+#	Install & Prepare Postgres (If it's not install yet)
+#-----------------------------------------------------------------
+#to see current version run : psql --version 
+
+sudo apt-get install postgresql -y
+sudo apt-get install postgresql-9.5 -y
+
+#Note : -y, --yes, --assume-yes
+#Automatic yes to prompts; assume "yes" as answer to all prompts and
+#run non-interactively.
+#This will automatically create a (system) user named postgres. 
+#Now we log in as that user and create a database user.
+
+sudo su - postgres
+createuser --createdb --username postgres --no-createrole --no-superuser --pwprompt odoo
+#line above create "odoo" user with database creation role only
+
+#create database user "odoo" with superuser role
+#Before, if you're create the simple "odoo" user run this : "dropuser username"
+createuser -s odoo
+
+#We will now go back to root user, type :
+exit
+
+
+
+#	Postgresql Management	
+#------------------------------------------------------------------
+
+
+#	Edition of odoo user created recently password
+#------------------------------------------------------------------
+sudo -u postgres
+psql 
+
+#run this in psql CLI
+alter user odoo with password 'odoo';
+#don't forget the ';'
+
+
+#quit psql whit
+\q
+
+#	Edit postgresql.conf to listen the port from all interfaces
+#--------------------------------------------------------------------
+
+cd /etc/postgresql/9.5/main/
+sudo su
+nano postgresql.conf
+
+
+#Change the line that contains listen_addresses=’localhost’ to listen_addresses=’*’ Edit #pg_hba.conf to allow remote connection from other servers
+
+nano pg_hba.conf
+
+#Add the following line, host all all 0.0.0.0/0 md5
+#Note: To allow IPv6 or all IPs, use
+#host all all ::0/0 md5 #ipv6 range
+#host all all all md5 #all ip
+
+systemctl status postgresql
+systemctl start postgresql
+#systemctl enable postgresql
+
+
+
+#	Odoo configuration
+#-------------------------------------------------------------------
+#Before follow this step, make sure that your odoo-8 directory is unzip and set/or copy on 
+# /opt directory else make it in command line with root user
+
+
+#	Setup configuration file
+#-------------------------------------------------------------------
+
+sudo chown -R odoo: *
+sudo cp /opt/odoo-8.0/debian/openerp-server.conf /etc/odoo-server.conf
+sudo chown odoo: /etc/odoo-server.conf
+sudo chmod 640 /etc/odoo-server.conf
+
+
+#	Edit /etc/odoo-server.conf
+#---------------------------------------------------------------------
+nano /etc/odoo-server.conf
+
+
+#---------------------------------------------------------------------------------
+#Copy and paste below content in config file, write correct addons paths
+ [options]
+ ; This is the password that allows database operations:
+ admin_passwd = admin
+ db_host = False
+ db_port = False
+ db_user = odoo
+ db_password = False
+ addons_path = /opt/odoo/addons,/opt/odoo/openerp/addons
+ ;Log settings
+ logfile = /var/log/odoo/odoo-server.log
+ log_level = error
+#----------------------------------------------------------------------------------
+
+
+#We create a log file:
+sudo mkdir /var/log/odoo
+sudo chown odoo:root /var/log/odoo
+cd /var/log/odoo
+sudo touch odoo-server.log
+
+
+#	init script
+#----------------------------------------------------------------------------------
+cd /lib/systemd/system/
+sudo wget https://raw.githubusercontent.com/hermannkouadio/boanerges/master/odoo-server.sh
+
+
+#line above download file raw and put it in odoo-server.sh file witch include odoo-server.sh configuration
+
+
+#copy last file in odoo-server.service witch we'll be manage directly
+sudo cp odoo-server.sh /lib/systemd/system/odoo-server.service
+
+#manage file acces right
+sudo chmod 755 /lib/systemd/system/odoo-server.service
+sudo chown root: /lib/systemd/system/odoo-server.service
+
+#	Python requirement for odoo
+#----------------------------------------------------------------------------------
+#We're going to install python requirement for odoo v8. Know that we can
+#do it in the tutorail beginning
+
+
+#login the odoo-8 directory /opt/odoo-8.0 in our case
+cd /opt/odoo-8.0
+
+
+#Execute requirement file
+pip install -r requirements.txt
+
+#	Start Odoo services
+#-----------------------------------------------------------------------------------
+
+
+#Come back to /lib/systemd/system
+cd /lib/systemd/system
+
+#and run (recommanded)
+sudo systemctl restart odoo-server
+#or sudo systemctl start odoo-server (if there no instancte of odoo install previously)
+
+#we can see odoo status with 
+sudo systemctl status odoo-server
+
+#For reload service 
+sudo systemctl daemon-reload
+
+#Lastly run next command to see service port
+netstat -nlt | grep 8069
+
+
+#----------------------------------------------------------------------------------------------
+#	
+#	We can see some error, don't worry ! To fix then, mmake sure that all requirements	
+#	are installed well.
+#	
+#	
+#	
+#	
+#	
+
+
+
+
+
+
