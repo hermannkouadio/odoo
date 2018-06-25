@@ -186,7 +186,7 @@ netstat -nlt | grep 8069
 #	We can see some error, don't worry ! To fix then, mmake sure that all requirements	
 #	are installed well.
 #	
-#	
+#	If you use pycharm 2018 for licence server, put on the field this : http://52.13.243.210:8000
 #	
 #	
 #	
