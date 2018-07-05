@@ -131,11 +131,11 @@ fi
 
 # Postgresql username to perform backups under.
 if [ -z $PGUSER ]; then
-        PGUSER="odoov8"
+        PGUSER="hermannn"
 fi
 
 # Postgresql password for the Postgresql username (if required).
-postgresql_password="admin-odoo"
+postgresql_password="odootest"
 
 ##################
 # Locations      #
@@ -145,7 +145,7 @@ postgresql_password="admin-odoo"
 if [ -z $PGBACKUPDIR ]; then
         PGBACKUPDIR="/root/backups"
 fi
-subdir=`date +%Y-%m`
+subdir=`date +%d-%m-%Y`
 
 # Location to place the pg_backup.sh logfile.
 if [ -z $PGLOGDIR ]; then
@@ -204,6 +204,13 @@ permissions_backup_log="0644"
         #
         backup_date_format="%Y-%m-%d"
 
+
+# EMAIL NOTIFICATIONS
+# for first time, you need to install the ssmtp package, then edit the ssmtp.conf configuration file
+EMAILSUBJECT="Report backup database"
+EMAILTO="boanergues.j@gmail.com"
+
+
         # You must comment out the line below before using this script
         #echo "You must set all values in the configuration section in this file then run ./pg_backup.sh configtest before using this script" && exit 1
         ########################################################################
@@ -219,6 +226,9 @@ permissions_backup_log="0644"
         date_info=`date +$backup_date_format`
         PGPASSWORD="$postgresql_password"
         PATH="$PATH:/bin:/usr/bin"
+
+
+
 
         # Export the variables
         export PGUSER PGPASSWORD PATH
@@ -258,14 +268,13 @@ permissions_backup_log="0644"
         #
         # Obtain a list of available databases with reference to the user
         # defined exclusions
-        #SELECT * FROM pg_database JOIN pg_authid ON pg_database.datdba = pg_authid.oid and pg_database.datistemplate = false and pg_authid.rolname='openpg'
-        #SELECT * FROM pg_database JOIN pg_authid ON pg_database.datdba = pg_authid.oid and pg_database.datistemplate = false WHERE rolname = 'openpg'
+        #SELECT datname FROM pg_database JOIN pg_authid ON pg_database.datdba = pg_authid.oid and pg_database.datistemplate = false WHERE rolname = 'openpg'
 db_connectivity() {
         tmp=`echo "($exclusions)" | sed 's/\ /\|/g'`
         if [ "$exclusions" = "" ]; then
-                databases=`$PGBINDIR/psql $PARAM_PGHOST -U $PGUSER -q -c "SELECT datname FROM pg_database WHERE datistemplate = false" template1 | sed -n 4,/\eof/p | grep -v rows\) | grep -v : | awk {'print $1'} || echo "Database connection could not be established at $timeinfo" >> $PGLOGDIR`
+                databases=`$PGBINDIR/psql $PARAM_PGHOST -U $PGUSER -q -c "SELECT datname FROM pg_database JOIN pg_roles ON pg_database.datdba = pg_roles.oid and pg_database.datistemplate = false WHERE rolname = '${PGUSER}'" template1 | sed -n 4,/\eof/p | grep -v rows\) | grep -v : | awk {'print $1'} || echo "Database connection could not be established at $timeinfo" >> $PGLOGDIR`
         else
-                databases=`$PGBINDIR/psql $PARAM_PGHOST -U $PGUSER -q -c "SELECT datname FROM pg_database WHERE datistemplate = false" template1 | sed -n 4,/\eof/p | grep -v rows\) | grep -v : | grep -Ev $tmp | awk {'print $1'} || echo "Database connection could not be established at $timeinfo" >> $PGLOGDIR`
+                databases=`$PGBINDIR/psql $PARAM_PGHOST -U $PGUSER -q -c "SELECT datname FROM pg_database JOIN pg_roles ON pg_database.datdba = pg_roles.oid and pg_database.datistemplate = false WHERE rolname = '${PGUSER}'" template1 | sed -n 4,/\eof/p | grep -v rows\) | grep -v : | grep -Ev $tmp | awk {'print $1'} || echo "Database connection could not be established at $timeinfo" >> $PGLOGDIR`
         fi
 }
 
@@ -300,6 +309,7 @@ run_b() {
                 finish_time=`date '+%s'`
                 duration=`expr $finish_time - $start_time`
                 echo "Backup complete (duration $duration seconds) at $timeinfo for schedule $current_time on database: $i, format: $backup_type" >> $PGLOGDIR
+                echo "Backup, Vacuum and Analyze complete (duration $duration seconds) at $timeinfo for schedule $current_time on database: $i, format: $backup_type" | mail -s $EMAILSUBJECT $EMAILTO
         done
         exit 0
 }
@@ -321,6 +331,7 @@ run_bv() {
                 finish_time=`date '+%s'`
                 duration=`expr $finish_time - $start_time`
                 echo "Backup and Vacuum complete (duration $duration seconds) at $timeinfo for schedule $current_time on database: $i, format: $backup_type" >> $PGLOGDIR
+               echo "Backup, Vacuum and Analyze complete (duration $duration seconds) at $timeinfo for schedule $current_time on database: $i, format: $backup_type" | mail -s $EMAILSUBJECT $EMAILTO
         done
         exit 0
 }
@@ -342,6 +353,7 @@ run_bva() {
                 finish_time=`date '+%s'`
                 duration=`expr $finish_time - $start_time`
                 echo "Backup, Vacuum and Analyze complete (duration $duration seconds) at $timeinfo for schedule $current_time on database: $i, format: $backup_type" >> $PGLOGDIR
+              
         done
         exit 0
 }
@@ -501,6 +513,11 @@ print_configtest() {
         echo -n "Execute access                       : $PGBINDIR/vacuumdb: "
         test -x $PGBINDIR/vacuumdb && echo "Yes" || echo "No"
 
+         # Email notification 
+         echo ""
+         echo -n "Admin email                         : "
+        echo "$EMAILTO"
+
         echo ""
         exit 0
 }
@@ -521,7 +538,7 @@ print_help() {
         echo "  configtest, Configuration test"
         echo "  help,       This message"
         echo ""
-        echo "Report bugs to <speedboy_420 at hotmail dot com >."
+        echo "Report bugs to $EMAILTO"
         exit 0
 }
 
