@@ -168,6 +168,10 @@ pip install -r requirements.txt
 #sudo apt-get install libsasl2-dev python-dev libldap2-dev libssl-dev
 #sudo apt-get install python-ldap
 
+#Some packages can be forget during requirements.txt installation, when you will 
+#start odoo service, make sure that these missed package where installed. And update ubuntu
+#sudo apt-get update
+
 #	Start Odoo services
 #-----------------------------------------------------------------------------------
 
