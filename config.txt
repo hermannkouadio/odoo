@@ -160,6 +160,14 @@ cd /opt/odoo-8.0
 #Execute requirement file
 pip install -r requirements.txt
 
+#     Warning
+#----------------------------------------------------------------------------------------
+#If all package are not install correctly (lxml, python-ldap, etc.), run these commands :
+#apt-get install libxml2-dev libxslt-dev
+#sudo apt-get install lxml
+#sudo apt-get install libsasl2-dev python-dev libldap2-dev libssl-dev
+#sudo apt-get install python-ldap
+
 #	Start Odoo services
 #-----------------------------------------------------------------------------------
 
