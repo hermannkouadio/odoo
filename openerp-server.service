@@ -1,0 +1,17 @@
+[Unit]
+Description=Odoo Open Source ERP and CRM
+Requires=postgresql.service
+After=network.target postgresql.service
+    
+[Service]
+Type=simple
+PermissionsStartOnly=true
+SyslogIdentifier=odoo-server
+User=odoo
+Group=odoo
+ExecStart=/opt/odoo-8/odoo.py --config=/etc/openerp-server.conf --addons-path=/opt/odoo-8/addons/
+WorkingDirectory=/opt/odoo-8/
+StandardOutput=/var/log/odoo/openerp-server.log
+    
+[Install]
+WantedBy=multi-user.target
