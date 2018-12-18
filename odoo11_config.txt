@@ -185,6 +185,11 @@ pip3 install Babel decorator docutils ebaysdk feedparser gevent greenlet html2te
 	MarkupSafe mock num2words ofxparse passlib Pillow psutil psycogreen psycopg2 pydot pyparsing PyPDF2 
 	pyserial python-dateutil python-openid pytz pyusb PyYAML qrcode reportlab requests six suds-jurko 
 	vatnumber vobject Werkzeug XlsxWriter xlwt xlrd
+	
+#For ldap
+apt install libldap2-dev libsasl2-dev
+pip3 install pyldap
+
 #Some packages can be forget during requirements.txt installation, when you will 
 #start odoo service, make sure that these missed package where installed. And update ubuntu
 #sudo apt-get update
