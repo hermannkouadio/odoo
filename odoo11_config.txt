@@ -205,9 +205,14 @@ cd /lib/systemd/system
 sudo systemctl restart odoo-server
 #or sudo systemctl start odoo-server (if there no instancte of odoo install previously)
 
-#we can see odoo status with 
+#we can see odoo stImportError: No module named 'odoo'atus with 
 sudo systemctl status odoo-server
 
+#Error
+if you get odoo source from nightly, this error can appear :
+ImportError: No module named 'odoo'
+
+To resolve it, move file 'odoo' or 'odoo-bin' from setup folder to the root directory.0
 #For reload service 
 sudo systemctl daemon-reload
 
