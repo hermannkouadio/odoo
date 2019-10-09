@@ -121,6 +121,7 @@ nano /etc/odoo-server.conf
  ;Log settings
  logfile = /var/log/odoo/odoo-server.log
  log_level = error
+ xmlrpc-port = 8069
 #----------------------------------------------------------------------------------
 
 
